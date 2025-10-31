@@ -106,14 +106,16 @@ jobs:
 
       - name: Generate SBOM
         if: github.event_name != 'pull_request'
-        uses: anchore/sbom-action@v0
+        uses: anchore/sbom-action@v0.17.2
+        continue-on-error: true
         with:
           image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }}
           format: spdx-json
           output-file: sbom.spdx.json
+          upload-artifact: false
 
       - name: Upload SBOM
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && hashFiles('sbom.spdx.json') != ''
         uses: actions/upload-artifact@v4
         with:
           name: sbom
