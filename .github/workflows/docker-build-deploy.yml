@@ -75,9 +75,9 @@ jobs:
       # https://github.com/sigstore/cosign
       - name: Install cosign
         if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@v3.1.1
+        uses: sigstore/cosign-installer@v3.7.0
         with:
-          cosign-release: "v2.1.1"
+          cosign-release: "v2.4.1"
 
       - name: Sign the published Docker image
         if: github.event_name != 'pull_request'
@@ -87,7 +87,22 @@ jobs:
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
-        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+        run: |
+          # Initialize TUF root
+          cosign initialize
+          # Sign with retry logic
+          for tag in $(echo "${TAGS}"); do
+            echo "Signing ${tag}@${DIGEST}"
+            for i in {1..3}; do
+              if cosign sign --yes "${tag}@${DIGEST}"; then
+                echo "Successfully signed ${tag}"
+                break
+              else
+                echo "Attempt $i failed for ${tag}, retrying..."
+                sleep 5
+              fi
+            done
+          done
 
       - name: Generate SBOM
         if: github.event_name != 'pull_request'
