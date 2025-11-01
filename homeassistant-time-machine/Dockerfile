@@ -2,13 +2,13 @@
 # Multi-stage build for smaller, more secure images
 
 # Stage 1: Dependencies
-FROM node:20-alpine AS dependencies
+FROM node:24-alpine AS dependencies
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production && npm cache clean --force
 
 # Stage 2: Final image
-FROM node:20-alpine AS runtime
+FROM node:24-alpine AS runtime
 
 # Install security updates and required packages
 RUN apk update && \
