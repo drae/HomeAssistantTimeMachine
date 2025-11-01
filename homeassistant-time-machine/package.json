@@ -15,6 +15,6 @@
     "node-fetch": "^2.6.12"
   },
   "overrides": {
-    "brace-expansion": "2.0.2"
+    "brace-expansion": "4.0.1"
   }
 }
